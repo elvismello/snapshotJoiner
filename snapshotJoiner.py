@@ -39,168 +39,16 @@ import sys
 import os
 import struct
 
-# Creates a list containing the non-commented, non-empty lines
-# of the input file for the header.
-def process_input(file_):
-    h_file = []
-    input_ = open(file_, 'r')
-    for line in input_:
-        if line.find("#") != -1:
-            continue
-        elif line.find("\n") == 0:
-            continue
-        else:
-            h_file.append(line.split('\t'))
-    return h_file
+import snapwrite
 
 
-
-def read_header_old(folder, n_part):
-    h_file = process_input(folder + "/header.txt")
-    h_data = []
-    for j in n_part: # n_part
-        h_data.append(int(j))
-    for j in h_file[0][0:6]: # mass
-        h_data.append(float(j))
-    h_data.append(float(h_file[1][0])) # time
-    h_data.append(float(h_file[2][0])) # redshift
-    h_data.append(int(h_file[3][0])) # flag_sfr
-    h_data.append(int(h_file[4][0])) # flag_feedback
-    for j in n_part:
-        h_data.append(int(j)) # n_part_total
-    h_data.append(int(h_file[5][0])) # flag_coooling
-    h_data.append(int(h_file[6][0])) # num_files
-    h_data.append(float(h_file[7][0])) # box_size
-    h_data.append(float(h_file[8][0])) # omega0
-    h_data.append(float(h_file[9][0])) # omega_lambda
-    h_data.append(float(h_file[10][0])) # hubble_param
-
-    # blank, present in the header
-    for i in np.arange(96):
-        h_data.append(b'\x00')
-    s = struct.Struct('iiiiii dddddd d d i i iiiiii i i dddd cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc')
-
-    #h_data = [bytes(i, 'utf-8') for i in h_data]
-
-    packed_data = s.pack(*h_data)
-    return packed_data
-
-
-
-#incorporated header
-def read_header(n_part):
-    h_data = []
-    for j in n_part: # n_part
-        h_data.append(int(j))
-    for j in range(6): # mass table
-        h_data.append(0.0)
-    h_data.append(0.0) # time
-    h_data.append(0.0) # redshift
-    h_data.append(int(0)) # flag_sfr
-    h_data.append(int(0)) # flag_feedback
-    for j in n_part:
-        h_data.append(int(j)) # n_part_total
-    h_data.append(int(0)) # flag_coooling
-    h_data.append(int(1)) # num_files
-    h_data.append(0.0) # box_size
-    h_data.append(0.0) # omega0
-    h_data.append(0.0) # omega_lambda
-    h_data.append(1.0) # hubble_param
-
-    # blank, present in the header
-    for i in np.arange(96):
-        h_data.append(b'\x00')
-    s = struct.Struct('iiiiii dddddd d d i i iiiiii i i dddd cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc')
-
-    #h_data = [bytes(i, 'utf-8') for i in h_data]
-
-    packed_data = s.pack(*h_data)
-    return packed_data
-
-
-
-def write_dummy(f, values_list):
-    for i in values_list:
-        dummy = [i]
-        s = struct.Struct('i')
-        d = s.pack(*dummy)
-        f.write(d)
-
-
-
-def write_block(f, block_data, data_type, block_name):
-    write_dummy(f, [8])
-
-    block_name_binary = [bytes(i, 'utf-8') for i in block_name]
-
-    f.write(struct.pack('c' * 4, *block_name_binary))
-    if(block_name == 'HEAD'):
-        nbytes = 256
-    else:
-        fmt = data_type * len(block_data)
-        nbytes = len(block_data) * 4
-    write_dummy(f, [nbytes + 8, 8, nbytes]) 
-    if(block_name == 'HEAD'):
-        f.write(block_data) 
-    else:
-        f.write(struct.pack(fmt, *block_data))
-    write_dummy(f, [nbytes])
-
-
-
-def write_snapshot(n_part, folder=None, from_text=True, data_list=None, outfile='init.dat', old_header=False):
-    N_gas = n_part[0]
-    if(from_text and not folder):
-        print ("error: can't call write_snapshot with from_text=True\n"
-               "and without an input files folder.")
-    if(not from_text):
-        folder = os.getcwd()
-
-    if old_header:
-        header_data = read_header_old(folder, n_part)
-    else:
-        header_data = read_header(n_part)
-
-    # Erasing the input file before opening it.
-    with open(outfile, 'wb') as f:
-        if(from_text):
-            pos_data = np.fromfile(folder + "position.txt", sep='\t')
-            vel_data = np.fromfile(folder + "velocity.txt", sep='\t')
-            ID_data = np.fromfile(folder + "id.txt", dtype=int, sep='\t')
-            mass_data = np.fromfile(folder + "masses.txt", sep='\t')
-            if(N_gas > 0):
-                U_data = np.fromfile(folder + "energy.txt", sep='\t')
-                rho_data = np.fromfile(folder + "density.txt", sep='\t')
-                smoothing_data = np.fromfile(folder + "smoothing.txt", sep='\t')
-        else:
-            pos_data = data_list[0]
-            vel_data = data_list[1]
-            ID_data = data_list[2]
-            mass_data = data_list[3]
-            if(N_gas > 0):
-                U_data = data_list[4]
-                rho_data = data_list[5]
-                smoothing_data = data_list[6]
-
-        write_block(f, header_data, None, 'HEAD')
-        write_block(f, pos_data, 'f', 'POS ')
-        write_block(f, vel_data, 'f', 'VEL ')
-        write_block(f, ID_data, 'i', 'ID  ')
-        write_block(f, mass_data, 'f', 'MASS')
-        if(N_gas > 0):
-            write_block(f, U_data, 'f', 'U   ')
-            write_block(f, rho_data, 'f', 'RHO ')
-            write_block(f, smoothing_data, 'f', 'HSML')
-
-
-
-def rotation (vector, alpha=0, beta=0, gamma=0):
+def rotation (vector, alpha=0, beta=0, gamma=0, returnMatrix=False):
     """
     alpha: angle of rotation around the x axis
     beta: angle of rotation around the y axis
     gamma: angle of rotation around the z axis
     """
-    
+    # It may be better to find a way to apply a rotation without using an external for loop.
     vector = np.array(vector)
 
     #rotation matrix in x
@@ -220,7 +68,10 @@ def rotation (vector, alpha=0, beta=0, gamma=0):
 
     rGeneral = np.matmul(np.matmul(rAlpha, rBeta), rGamma)
 
-    return (np.matmul(rGeneral, np.array(vector)))
+    if not returnMatrix:
+        return np.matmul(rGeneral, np.array(vector))
+    else:
+        return rGeneral
 
 
 
@@ -233,8 +84,7 @@ def join (snapshotZero, snapshotOne, output='init.dat', relativePos=[0.0, 0.0, 0
     be given in degrees.
     
     Rotation is applied using a for loop that transforms each vector
-    with the function rotation(). It may be better to find a way to
-    apply a rotation without using a for loop.
+    with the function rotation().
     """
 
 
@@ -243,7 +93,7 @@ def join (snapshotZero, snapshotOne, output='init.dat', relativePos=[0.0, 0.0, 0
 
     rotationAngles = np.radians([float(i) for i in rotationAngles])
 
-    #standart families in gadget 2
+    #standard families in gadget 2
     particleFamilies = ['gas', 'dm', 'disk', 'bulge', 'stars', 'bndry']
 
 
@@ -365,10 +215,10 @@ def join (snapshotZero, snapshotOne, output='init.dat', relativePos=[0.0, 0.0, 0
     dataList[1].shape = (-1, 1)
 
     if writeNewSnapshot:
-        write_snapshot(n_part=nPart, from_text=False, outfile=output, data_list=dataList, old_header=False)
+        snapwrite.write_snapshot(n_part=nPart, outfile=output, data_list=dataList, file_format='hdf5')
     
     else:
-        return (nPart, dataList)
+        return nPart, dataList
 
 
 
