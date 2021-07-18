@@ -1,3 +1,8 @@
+"""
+    Made possible with advice and contributions from Prof. Dr. Rubens Machado.
+
+"""
+
 import sys
 import os
 import struct
