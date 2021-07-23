@@ -5,7 +5,7 @@ Based in the module "snapwrite" contained in [Rafael Ruggiero](https://github.co
 
 
 ## Usage
-'''
+```
 usage: snapshotJoiner.py [-h] [-o OUTPUT] [-rP RELATIVE_POSITION [RELATIVE_POSITION ...]]
                          [-rV RELATIVE_VELOCITY [RELATIVE_VELOCITY ...]] [-r ROTATION [ROTATION ...]] [--hdf5]
                          snapshot0 snapshot1
@@ -45,4 +45,4 @@ optional arguments:
                         
                         
   --hdf5                Output initial conditions in HDF5
-  '''
+  ```
