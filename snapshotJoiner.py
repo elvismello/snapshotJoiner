@@ -9,36 +9,14 @@ relative velocities in vx vy vz, then angles of rotation
 around the x, y and z axis.
 
 
-Script that joins snapshots* and is able to write them, 
-either from a set of text files, or by directly passing 
-the necessary data to the function write_snapshot (for
-details on the syntax, read the function).
-
-A file named 'init.dat' will be created if no other name
-is given.
-
-
-
-
-*Modified to work with Python 3.8 and made from two
-separate scripts (hence why there are two conventions
-for writing the variable names and such).
-
-Due to the changes made, it probably doesn't work with
-Python 2.x anymore.
-
+Script that joins snapshots and is able to write them by directly
+passing the necessary data to the function write_snapshot.
 
 '''
 
-#TODO make it more professional looking, adding "from argparse import ArgumentParser as parser"
 
 import numpy as np
 import pynbody as pnb
-
-import sys
-import os
-import struct
-
 import snapwrite
 
 
@@ -80,7 +58,8 @@ def join (snapshotZero, snapshotOne, output='init.dat',
           rotationAngles=[0.0, 0.0, 0.0], shiftToCOM=True,
           writeNewSnapshot=True, outputFormat='gadget2'):
     """ 
-    Joins snapshots and writes the result if writeNewSnapshot is True.
+    Joins snapshots and writes the result as a new snapshot if
+    writeNewSnapshot is True.
 
     The rotation will be applied to the second snapshot. Angles should
     be given in degrees.
@@ -230,16 +209,26 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='placeholder')
 
-    parser.add_argument('snapshot0')
-    parser.add_argument('snapshot1')
-    parser.add_argument('-o', '--output', default='init.ic')
-    parser.add_argument('-rP', '--relativePosition', nargs=3,
-                        default=[0.0, 0.0, 0.0])
-    parser.add_argument('-rV', '--relativeVelocity', nargs=3,
-                        default=[0.0, 0.0, 0.0])
-    parser.add_argument('-r', '--rotation', nargs=3,
-                        default=[0.0, 0.0, 0.0])
-    parser.add_argument('--hdf5', action='store_true')
+    parser.add_argument('snapshot0', help='The name of the first input file.')
+    parser.add_argument('snapshot1', help='The name of the second input file.')
+    parser.add_argument('-o', '--output', default='init.ic', help='The name of\
+                        the output file')
+    parser.add_argument('-rP', '--relative-position', nargs='+',
+                        default=[0.0, 0.0, 0.0], help='Relative position of\
+                         the second snapshot with relation to the first.\
+                         Must be given in terms of it\'s components in x, y \
+                         and z')
+    parser.add_argument('-rV', '--relative-velocity', nargs='+',
+                        default=[0.0, 0.0, 0.0], help='Relative velocity of the\
+                         second snapshot with relation to the first. Must be \
+                         given in terms of it\'s components in x, y and z')
+    parser.add_argument('-r', '--rotation', nargs='+',
+                        default=[0.0, 0.0, 0.0], help='Angle of the rotation\
+                         to be applied to the second snapshot. Must be given\
+                         in terms of rotations around the x, y and z axis that\
+                         pass by the origin of the second snapshot')
+    parser.add_argument('--hdf5', action='store_true', help='Output initial\
+                        conditions in HDF5')
 
     args = parser.parse_args()
 
@@ -248,7 +237,10 @@ if __name__ == '__main__':
     else:
         outputFormat = 'gadget2'
 
-    join(args.snapshot0, args.snapshot1, args.output, relativePos=args.relativePosition, relativeVel=args.relativeVelocity, rotationAngles=args.rotation, outputFormat=outputFormat)
+    join(args.snapshot0, args.snapshot1, args.output,
+         relativePos=args.relative_position,
+         relativeVel=args.relative_velocity,
+         rotationAngles=args.rotation, outputFormat=outputFormat)
 
 
 
