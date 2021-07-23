@@ -75,8 +75,10 @@ def rotation (vector, alpha=0, beta=0, gamma=0, returnMatrix=False):
 
 
 
-def join (snapshotZero, snapshotOne, output='init.dat', relativePos=[0.0, 0.0, 0.0],
-          relativeVel=[0.0, 0.0, 0.0], rotationAngles=[0.0, 0.0, 0.0], shiftToCOM=True, writeNewSnapshot=True):
+def join (snapshotZero, snapshotOne, output='init.dat',
+          relativePos=[0.0, 0.0, 0.0], relativeVel=[0.0, 0.0, 0.0],
+          rotationAngles=[0.0, 0.0, 0.0], shiftToCOM=True,
+          writeNewSnapshot=True, outputFormat='gadget2'):
     """ 
     Joins snapshots and writes the result if writeNewSnapshot is True.
 
@@ -215,7 +217,7 @@ def join (snapshotZero, snapshotOne, output='init.dat', relativePos=[0.0, 0.0, 0
     dataList[1].shape = (-1, 1)
 
     if writeNewSnapshot:
-        snapwrite.write_snapshot(n_part=nPart, outfile=output, data_list=dataList, file_format='hdf5')
+        snapwrite.write_snapshot(n_part=nPart, outfile=output, data_list=dataList, file_format=outputFormat)
     
     else:
         return nPart, dataList
@@ -224,7 +226,29 @@ def join (snapshotZero, snapshotOne, output='init.dat', relativePos=[0.0, 0.0, 0
 
 if __name__ == '__main__':
 
-    join(*sys.argv[1:4], relativePos=sys.argv[4:7], relativeVel=sys.argv[7:10], rotationAngles=sys.argv[10:13])
+    import argparse
+
+    parser = argparse.ArgumentParser(description='placeholder')
+
+    parser.add_argument('snapshot0')
+    parser.add_argument('snapshot1')
+    parser.add_argument('-o', '--output', default='init.ic')
+    parser.add_argument('-rP', '--relativePosition', nargs=3,
+                        default=[0.0, 0.0, 0.0])
+    parser.add_argument('-rV', '--relativeVelocity', nargs=3,
+                        default=[0.0, 0.0, 0.0])
+    parser.add_argument('-r', '--rotation', nargs=3,
+                        default=[0.0, 0.0, 0.0])
+    parser.add_argument('--hdf5', action='store_true')
+
+    args = parser.parse_args()
+
+    if args.hdf5:
+        outputFormat = 'hdf5'
+    else:
+        outputFormat = 'gadget2'
+
+    join(args.snapshot0, args.snapshot1, args.output, relativePos=args.relativePosition, relativeVel=args.relativeVelocity, rotationAngles=args.rotation, outputFormat=outputFormat)
 
 
 
