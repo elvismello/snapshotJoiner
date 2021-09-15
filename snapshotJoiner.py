@@ -56,7 +56,8 @@ def rotation (vector, alpha=0, beta=0, gamma=0, returnMatrix=False):
 def join (snapshotZero, snapshotOne, output='init.dat',
           relativePos=[0.0, 0.0, 0.0], relativeVel=[0.0, 0.0, 0.0],
           rotationAngles=[0.0, 0.0, 0.0], shiftToCOM=True,
-          writeNewSnapshot=True, outputFormat='gadget2'):
+          writeNewSnapshot=True, outputFormat='gadget2',
+          includeHaloZero=True):
     """ 
     Joins snapshots and writes the result as a new snapshot if
     writeNewSnapshot is True.
@@ -95,7 +96,15 @@ def join (snapshotZero, snapshotOne, output='init.dat',
 
 
     for i in particleFamilies:
-        existsInZero = i in [*snapshotZero.families()]
+
+        if i == 'dm': # skips writing the halo from the first snapshot if includeHaloZero is False
+            if includeHaloZero:
+                existsInZero = i in [*snapshotZero.families()]
+            else:
+                existsInZero = False
+        else:
+            existsInZero = i in [*snapshotZero.families()]
+                
         existsInOne = i in [*snapshotOne.families()]
 
         if existsInZero and existsInOne:
@@ -177,6 +186,7 @@ def join (snapshotZero, snapshotOne, output='init.dat',
 
 
     #Shifting to center of mass
+    # TODO make this part more readable
     if shiftToCOM:
         xCOM = sum(dataList[0][:, 0] * dataList[3]) / sum(dataList[0][:, 0])
         yCOM = sum(dataList[0][:, 1] * dataList[3]) / sum(dataList[0][:, 1])
@@ -229,6 +239,9 @@ if __name__ == '__main__':
                          pass by the origin of the second snapshot')
     parser.add_argument('--hdf5', action='store_true', help='Output initial\
                         conditions in HDF5')
+    parser.add_argument('--noMainHalo', action='store_false', help='This will\
+                         make the program skip the halo of dark matter in the\
+                         first snapshot parsed.')
 
     args = parser.parse_args()
 
@@ -240,7 +253,8 @@ if __name__ == '__main__':
     join(args.snapshot0, args.snapshot1, args.output,
          relativePos=args.relative_position,
          relativeVel=args.relative_velocity,
-         rotationAngles=args.rotation, outputFormat=outputFormat)
+         rotationAngles=args.rotation, outputFormat=outputFormat,
+         includeHaloZero=args.noMainHalo)
 
 
 
