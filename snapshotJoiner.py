@@ -97,13 +97,10 @@ def join (snapshotZero, snapshotOne, output='init.dat',
 
     for i in particleFamilies:
 
-        if i == 'dm': # skips writing the halo from the first snapshot if includeHaloZero is False
-            if includeHaloZero:
-                existsInZero = i in [*snapshotZero.families()]
-            else:
-                existsInZero = False
-        else:
+        if i != 'dm' or includeHaloZero: # skips writing the halo from the first snapshot if includeHaloZero is False
             existsInZero = i in [*snapshotZero.families()]
+        else:
+            existsInZero = False
                 
         existsInOne = i in [*snapshotOne.families()]
 
