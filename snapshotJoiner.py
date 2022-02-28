@@ -237,10 +237,11 @@ if __name__ == '__main__':
                          components in x, y and z')
     parser.add_argument('-r', '--rotation', nargs=3,
                         metavar=('angleX', 'angleY', 'angleZ'),
-                        default=[0.0, 0.0, 0.0], help='Angle of the rotation\
-                         to be applied to the second snapshot. Must be given\
-                         in terms of rotations around the x\', y\' and z\'\
-                         axis that pass by the origin of the second snapshot')
+                        default=[0.0, 0.0, 0.0], help='Angles (in degrees) of\
+                         the rotation to be applied to the second snapshot.\
+                         Must be given in terms of rotations around the x\',\
+                         y\' and z\' axis that pass by the origin of the second\
+                         snapshot')
     parser.add_argument('--hdf5', action='store_true', help='Output initial\
                         conditions in HDF5')
     parser.add_argument('--noMainHalo', action='store_false', help='This will\
