@@ -130,7 +130,7 @@ def join (snapshotZero, snapshotOne, output='init.dat',
                 smoothing.append(np.concatenate((np.array(snapshotZero[i]['SmoothingLength']), np.array(snapshotOne[i]['SmoothingLength']))))
             # Metallicity
             if i != 'PartType1':
-                metallicity.append(np.concatenate(np.array(snapshotZero[i]['Metallicity']), np.array(snapshotOne[i]['Metallicity'])))
+                metallicity.append(np.concatenate((np.array(snapshotZero[i]['Metallicity']), np.array(snapshotOne[i]['Metallicity']))))
 
         
         elif existsInZero:
@@ -143,7 +143,7 @@ def join (snapshotZero, snapshotOne, output='init.dat',
                 rho.append(np.array(snapshotZero[i]['Density']))
                 smoothing.append(np.array(snapshotZero[i]['SmoothingLength']))
             if i != 'PartType1':
-                metallicity.append(np.concatenate(np.array(snapshotZero[i]['Metallicity'])))
+                metallicity.append(np.array(snapshotZero[i]['Metallicity']))
         
         elif existsInOne:
             nPart.append(len(snapshotOne[i]['ParticleIDs']))
@@ -159,7 +159,7 @@ def join (snapshotZero, snapshotOne, output='init.dat',
                 rho.append(np.array(snapshotOne[i]['Density']))
                 smoothing.append(np.array(snapshotOne[i]['SmoothingLength']))
             if i != 'PartType1':
-                metallicity.append(np.concatenate(np.array(snapshotZero[i]['Metallicity'])))
+                metallicity.append(np.array(snapshotZero[i]['Metallicity']))
         
         else:
             nPart.append(0)
@@ -178,8 +178,9 @@ def join (snapshotZero, snapshotOne, output='init.dat',
                     np.concatenate(masses),
                     np.concatenate(energy),
                     np.concatenate(rho),
-                    np.concatenate(smoothing)]
-    
+                    np.concatenate(smoothing),
+                    np.concatenate(metallicity)]
+
     else:
         dataList = [np.concatenate(positions),
                     np.concatenate(velocities),
@@ -191,16 +192,18 @@ def join (snapshotZero, snapshotOne, output='init.dat',
 
     #Shifting to center of mass
     if shiftToCOM:
-        xCOM  = sum(dataList[0][:, 0] * dataList[3]) / sum(dataList[0][:, 0])
-        yCOM  = sum(dataList[0][:, 1] * dataList[3]) / sum(dataList[0][:, 1])
-        zCOM  = sum(dataList[0][:, 2] * dataList[3]) / sum(dataList[0][:, 2])
+        xCOM  = sum(dataList[0][:, 0] * dataList[3]) / sum(dataList[3])
+        yCOM  = sum(dataList[0][:, 1] * dataList[3]) / sum(dataList[3])
+        zCOM  = sum(dataList[0][:, 2] * dataList[3]) / sum(dataList[3])
 
-        vxCOM = sum(dataList[1][:, 0] * dataList[3]) / sum(dataList[1][:, 0])
-        vyCOM = sum(dataList[1][:, 1] * dataList[3]) / sum(dataList[1][:, 1])
-        vzCOM = sum(dataList[1][:, 2] * dataList[3]) / sum(dataList[1][:, 2])
+        vxCOM = sum(dataList[1][:, 0] * dataList[3]) / sum(dataList[3])
+        vyCOM = sum(dataList[1][:, 1] * dataList[3]) / sum(dataList[3])
+        vzCOM = sum(dataList[1][:, 2] * dataList[3]) / sum(dataList[3])
 
         dataList[0] = dataList[0] - [xCOM, yCOM, zCOM]
         dataList[1] = dataList[1] - [vxCOM, vyCOM, vzCOM]
+
+        print([xCOM, yCOM, zCOM], [vxCOM, vyCOM, vzCOM])
 
 
     #Changing the shape for writting
