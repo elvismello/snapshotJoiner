@@ -9,7 +9,7 @@ relative velocities in vx vy vz, then angles of rotation
 around the x, y and z axis.
 
 
-Script that joins snapshots and is able to write them by directly
+Script that joins snapshots and writes them by directly
 passing the necessary data to the function write_snapshot.
 
 '''
@@ -30,19 +30,19 @@ def rotation (vector, alpha=0, beta=0, gamma=0, returnMatrix=False):
     vector = np.array(vector)
 
     #rotation matrix in x
-    rAlpha = np.array([[1, 0, 0],
+    rAlpha = np.array([[1,             0,              0],
                        [0, np.cos(alpha), -np.sin(alpha)],
                        [0, np.sin(alpha), np.cos(alpha)]])
     
     #rotation matrix in y
-    rBeta = np.array([[np.cos(beta), 0, -np.sin(beta)],
-                      [0, 1, 0],
+    rBeta = np.array([[np.cos(beta),  0, -np.sin(beta)],
+                      [0,             1,             0],
                       [-np.sin(beta), 0, np.cos(beta)]])
 
     #rotation matrix in z
     rGamma = np.array([[np.cos(gamma), -np.sin(gamma), 0],
-                       [np.sin(gamma), np.cos(gamma), 0],
-                       [0, 0, 1]])
+                       [np.sin(gamma),  np.cos(gamma), 0],
+                       [0,                          0, 1]])
 
     rGeneral = np.matmul(np.matmul(rAlpha, rBeta), rGamma)
 
