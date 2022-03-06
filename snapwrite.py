@@ -1,13 +1,6 @@
-"""
-    Made possible with advice and contributions from Prof. Dr. Rubens Machado.
-
-"""
-
-import sys
-import os
 import struct
 import numpy as np
-import snapwrite
+import h5py
 
 def read_header(n_part):
     h_data = []
@@ -102,7 +95,7 @@ def write_snapshot(n_part, data_list, outfile='init.dat',
     if len(data_list) > 7:
         Z = data_list[7]
     else:
-        Z = None
+        Z = False
 
     if file_format == 'gadget2':
         header_data = read_header(n_part)
@@ -113,12 +106,15 @@ def write_snapshot(n_part, data_list, outfile='init.dat',
             write_block(f, ID_data, 'i', 'ID  ')
             write_block(f, mass_data, 'f', 'MASS')
             if(N_gas > 0):
-               write_block(f, U_data, 'f', 'U   ')
-               write_block(f, rho_data, 'f', 'RHO ')
-               write_block(f, smoothing_data, 'f', 'HSML')
+                write_block(f, U_data, 'f', 'U   ')
+
+                if(len(data_list) > 7):
+                    write_block(f, Z, 'f', 'Z   ')
     
+                write_block(f, rho_data, 'f', 'RHO ')
+                write_block(f, smoothing_data, 'f', 'HSML')
+
     elif file_format == 'hdf5':
-        import h5py
 
         pos_data.shape = (len(pos_data)//3, 3)
         vel_data.shape = (len(vel_data)//3, 3)
@@ -141,12 +137,10 @@ def write_snapshot(n_part, data_list, outfile='init.dat',
 
             #Particle families
             for i, j in enumerate(n_part):
-                # HDF5 format doesn't require info for particles that
-                # don't exist
-                if j == 0:
+                if j == 0: # only writes a dataset if the element from n_part != 0
                     continue
                 else:
-                    current_family = f.create_group('PartType'+str(i))
+                    current_family = f.create_group(f'PartType{i}')
                     start_index = sum(n_part[:i])
                     end_index = sum(n_part[:i+1])
                     current_family.create_dataset('Coordinates',
@@ -161,14 +155,19 @@ def write_snapshot(n_part, data_list, outfile='init.dat',
                     current_family.create_dataset('Masses',
                                 data = mass_data[start_index:end_index],
                                 dtype = dtype)
+
                     # TODO currently all gas+stars get the same metallicity.
                     # this should be an option in the configuration as well.
 
-                    # Metallicity properties - not needed for now
-                    #if (i in [0, 2, 3, 4]) and (Z != None):
-                    #    current_family.create_dataset('Metallicity',
-                    #                data = Z[start_index:end_index],
-                    #                dtype = dtype)
+                    # Metallicity properties
+                    # Added if data list has an extra list at the end
+                    if i in [0, 2, 3, 4] and np.any(Z):
+                        if i > 1: # removes halo particles' indices
+                            start_index -= n_part[1]
+                            end_index -= n_part[1]
+                        current_family.create_dataset('Metallicity',
+                                    data = Z[start_index:end_index],
+                                    dtype = dtype)
 
                     #Gas specific properties
                     if i == 0 and N_gas > 0:
