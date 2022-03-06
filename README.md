@@ -17,3 +17,6 @@ python3 snapshotJoiner.py clusterA.hdf5 clusterB.hdf5 -o rampressure.hdf5 --rela
 ```
 python3 snapshotJoiner.py galaxyA.hdf5 galaxyB.hdf5 -o rampressure.hdf5 --relative-position 1000 0 0 --rotation 0 90 0
 ```
+
+## Help
+This code supports the `--help` flag, that explains each available option.
