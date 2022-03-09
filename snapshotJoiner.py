@@ -159,7 +159,7 @@ def join (snapshotZero, snapshotOne, output='init.dat',
                 rho.append(np.array(snapshotOne[i]['Density']))
                 smoothing.append(np.array(snapshotOne[i]['SmoothingLength']))
             if i != 'PartType1':
-                metallicity.append(np.array(snapshotZero[i]['Metallicity']))
+                metallicity.append(np.array(snapshotOne[i]['Metallicity']))
         
         else:
             nPart.append(0)
