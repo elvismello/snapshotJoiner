@@ -57,7 +57,8 @@ def join (snapshotZero, snapshotOne, output='init.dat',
           relativePos=[0.0, 0.0, 0.0], relativeVel=[0.0, 0.0, 0.0],
           rotationAngles=[0.0, 0.0, 0.0], shiftToCOM=True,
           writeNewSnapshot=True, outputFormat='gadget2',
-          includeHaloZero=True):
+          includeHaloZero=True, metallicity_in_everything=False):
+    
     """ 
     Joins snapshots and writes the result as a new snapshot if
     writeNewSnapshot is True.
@@ -80,8 +81,8 @@ def join (snapshotZero, snapshotOne, output='init.dat',
 
 
     #Loading snapshots
-    snapshotZero = h5py.File(snapshotZero)
-    snapshotOne = h5py.File(snapshotOne)
+    snapshotZero = h5py.File(snapshotZero, 'r')
+    snapshotOne = h5py.File(snapshotOne, 'r')
     print('Snapshots loaded!')
 
     #Getting information and joining each type of particle
@@ -129,7 +130,7 @@ def join (snapshotZero, snapshotOne, output='init.dat',
                 rho.append(np.concatenate((np.array(snapshotZero[i]['Density']), np.array(snapshotOne[i]['Density']))))
                 smoothing.append(np.concatenate((np.array(snapshotZero[i]['SmoothingLength']), np.array(snapshotOne[i]['SmoothingLength']))))
             # Metallicity
-            if i != 'PartType1':
+            if i != 'PartType1' and (metallicity_in_everything or i == 'PartType0'):
                 metallicity.append(np.concatenate((np.array(snapshotZero[i]['Metallicity']), np.array(snapshotOne[i]['Metallicity']))))
 
         
@@ -142,7 +143,7 @@ def join (snapshotZero, snapshotOne, output='init.dat',
                 energy.append(np.array(snapshotZero[i]['InternalEnergy']))
                 rho.append(np.array(snapshotZero[i]['Density']))
                 smoothing.append(np.array(snapshotZero[i]['SmoothingLength']))
-            if i != 'PartType1':
+            if i != 'PartType1' and (metallicity_in_everything or i == 'PartType0'):
                 metallicity.append(np.array(snapshotZero[i]['Metallicity']))
         
         elif existsInOne:
@@ -158,7 +159,7 @@ def join (snapshotZero, snapshotOne, output='init.dat',
                 energy.append(np.array(snapshotOne[i]['InternalEnergy']))
                 rho.append(np.array(snapshotOne[i]['Density']))
                 smoothing.append(np.array(snapshotOne[i]['SmoothingLength']))
-            if i != 'PartType1':
+            if i != 'PartType1' and (metallicity_in_everything or i == 'PartType0'):
                 metallicity.append(np.array(snapshotOne[i]['Metallicity']))
         
         else:
