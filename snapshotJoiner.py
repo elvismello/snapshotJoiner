@@ -1,16 +1,14 @@
 '''
 DESCRIPTION:
 
-usage:
-python snapshotJoiner.py haloA haloB haloAB  0 0 0  0 0 0  0 0 0
+usage: python snapshotJoiner.py haloA haloB haloAB  0 0 0  0 0 0  0 0 0
 
-where the zeros are meant to be relative positions in x y z,
-relative velocities in vx vy vz, then angles of rotation
-around the x, y and z axis.
+where the zeros are meant to be relative positions in x y z, relative
+velocities in vx vy vz, then angles of rotation around the x, y and z axis.
 
 
-Script that joins snapshots and writes them by directly
-passing the necessary data to the function write_snapshot.
+Script that joins snapshots and writes them by directly passing the necessary
+data to the function write_snapshot.
 
 '''
 
@@ -21,7 +19,7 @@ import snapwrite
 import argparse
 
 
-def rotation (vector, alpha=0, beta=0, gamma=0, returnMatrix=False, dtype='float64'):
+def rotation (vector, alpha=0.0, beta=0.0, gamma=0.0, returnMatrix=False, dtype='float64'):
     """
     alpha: angle of rotation around the x axis
     beta: angle of rotation around the y axis
@@ -45,7 +43,8 @@ def rotation (vector, alpha=0, beta=0, gamma=0, returnMatrix=False, dtype='float
                        [np.sin(gamma),  np.cos(gamma), 0],
                        [0,                          0, 1]], dtype=dtype)
 
-    rGeneral = np.matmul(np.matmul(rAlpha, rBeta), rGamma, dtype=dtype)
+    rGeneral = np.matmul(np.matmul(rGamma, rBeta), rAlpha, dtype=dtype)
+    
 
     if not returnMatrix:
         return np.matmul(rGeneral, np.array(vector), dtype=dtype)
@@ -83,7 +82,7 @@ def join (snapshotZero, snapshotOne, output='init.dat',
     #Loading snapshots
     snapshotZero = h5py.File(snapshotZero)
     snapshotOne = h5py.File(snapshotOne)
-
+    print('Snapshots loaded!')
 
     #Getting information and joining each type of particle
     nPart = []
@@ -97,6 +96,7 @@ def join (snapshotZero, snapshotOne, output='init.dat',
 
 
     for i in particleTypes:
+        print(f'Joining {i}...')
 
         if i != 'PartType1' or includeHaloZero: # skips writing the halo from the first snapshot if includeHaloZero is False
             existsInZero = i in [*snapshotZero.keys()]
@@ -192,6 +192,7 @@ def join (snapshotZero, snapshotOne, output='init.dat',
 
     #Shifting to center of mass
     if shiftToCOM:
+        print('Shifting coordinates to center of mass...')
         xCOM  = sum(dataList[0][:, 0] * dataList[3]) / sum(dataList[3])
         yCOM  = sum(dataList[0][:, 1] * dataList[3]) / sum(dataList[3])
         zCOM  = sum(dataList[0][:, 2] * dataList[3]) / sum(dataList[3])
@@ -203,7 +204,7 @@ def join (snapshotZero, snapshotOne, output='init.dat',
         dataList[0] = dataList[0] - [xCOM, yCOM, zCOM]
         dataList[1] = dataList[1] - [vxCOM, vyCOM, vzCOM]
 
-        print([xCOM, yCOM, zCOM], [vxCOM, vyCOM, vzCOM])
+
 
 
     #Changing the shape for writting
@@ -213,10 +214,13 @@ def join (snapshotZero, snapshotOne, output='init.dat',
     dataList[1].shape = (-1, 1)
 
     if writeNewSnapshot:
+        print('Writing snapshot...')
         snapwrite.write_snapshot(n_part=nPart, outfile=output, data_list=dataList, file_format=outputFormat)
-    
+
     else:
         return nPart, dataList
+
+    print('Done!')
 
 
 
@@ -250,6 +254,8 @@ if __name__ == '__main__':
     parser.add_argument('--noMainHalo', action='store_false', help='This will\
                          make the program skip the halo of dark matter in the\
                          first snapshot given.')
+    parser.add_argument('--noCOMshift', action='store_false', help='This will\
+                         skip the final shift into the center of mass.')
 
     args = parser.parse_args()
 
@@ -261,8 +267,10 @@ if __name__ == '__main__':
     join(args.snapshot0, args.snapshot1, args.output,
          relativePos=args.relative_position,
          relativeVel=args.relative_velocity,
-         rotationAngles=args.rotation, outputFormat=outputFormat,
-         includeHaloZero=args.noMainHalo)
+         rotationAngles=args.rotation,
+         outputFormat=outputFormat,
+         includeHaloZero=args.noMainHalo,
+         shiftToCOM=args.noCOMshift)
 
 
 
