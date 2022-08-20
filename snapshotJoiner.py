@@ -34,7 +34,7 @@ def rotation (vector, alpha=0.0, beta=0.0, gamma=0.0, returnMatrix=False, dtype=
                        [0, np.sin(alpha), np.cos(alpha)]], dtype=dtype)
     
     #rotation matrix in y
-    rBeta = np.array([[np.cos(beta),  0, -np.sin(beta)],
+    rBeta = np.array([[np.cos(beta),  0,  np.sin(beta)],
                       [0,             1,             0],
                       [-np.sin(beta), 0, np.cos(beta)]], dtype=dtype)
 
