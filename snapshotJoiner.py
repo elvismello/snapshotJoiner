@@ -233,7 +233,10 @@ def join (snapshotZero, snapshotOne, output='init.dat',
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description='placeholder')
+    parser = argparse.ArgumentParser(description='Self contained program\
+     written in python 3 that can join snapshots using hdf5 format. Based in\
+     the module \"snapwrite\" contained in Rafael Ruggiero\'s IC generation\
+     programs, but modified to work in python 3.')
 
     parser.add_argument('snapshot0', help='The name of the first input file.')
     parser.add_argument('snapshot1', help='The name of the second input file.')
