@@ -26,7 +26,6 @@ python3 snapshotJoiner.py galaxyA.hdf5 galaxyB.hdf5 -o rampressure.hdf5
 This code supports the `--help` flag, that explains each available option.
 
 ```
-No protocol specified
 usage: snapshotJoiner.py [-h] [-o OUTPUT] [-rP X Y Z] [-rV vX vY vZ]
 [-r angleX angleY angleZ] [--hdf5] [--noMainHalo] [--noCOMshift] snapshot0
 snapshot1
