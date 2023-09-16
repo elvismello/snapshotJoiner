@@ -57,7 +57,8 @@ def join (snapshotZero, snapshotOne, output='init.dat',
           relativePos=[0.0, 0.0, 0.0], relativeVel=[0.0, 0.0, 0.0],
           rotationAngles=[0.0, 0.0, 0.0], shiftToCOM=True,
           writeNewSnapshot=True, outputFormat='gadget2',
-          includeHaloZero=True, metallicity_in_everything=False):
+          includeHaloZero=True, metallicity_in_everything=False,
+          arepo=False):
     
     """ 
     Joins snapshots and writes the result as a new snapshot if
@@ -128,7 +129,8 @@ def join (snapshotZero, snapshotOne, output='init.dat',
             if i == 'PartType0':
                 energy.append(np.concatenate((np.array(snapshotZero[i]['InternalEnergy']), np.array(snapshotOne[i]['InternalEnergy']))))
                 rho.append(np.concatenate((np.array(snapshotZero[i]['Density']), np.array(snapshotOne[i]['Density']))))
-                smoothing.append(np.concatenate((np.array(snapshotZero[i]['SmoothingLength']), np.array(snapshotOne[i]['SmoothingLength']))))
+                if not arepo:
+                    smoothing.append(np.concatenate((np.array(snapshotZero[i]['SmoothingLength']), np.array(snapshotOne[i]['SmoothingLength']))))
             # Metallicity
             #if i != 'PartType1' and (metallicity_in_everything or i == 'PartType0'):
             #    metallicity.append(np.concatenate((np.array(snapshotZero[i]['Metallicity']), np.array(snapshotOne[i]['Metallicity']))))
@@ -148,7 +150,8 @@ def join (snapshotZero, snapshotOne, output='init.dat',
             if i == 'PartType0':
                 energy.append(np.array(snapshotZero[i]['InternalEnergy']))
                 rho.append(np.array(snapshotZero[i]['Density']))
-                smoothing.append(np.array(snapshotZero[i]['SmoothingLength']))
+                if not arepo:
+                    smoothing.append(np.array(snapshotZero[i]['SmoothingLength']))
             if i != 'PartType1' and (metallicity_in_everything or i == 'PartType0'):
                 metallicity.append(np.array(snapshotZero[i]['Metallicity']))
         
@@ -164,7 +167,8 @@ def join (snapshotZero, snapshotOne, output='init.dat',
             if i == 'PartType0':
                 energy.append(np.array(snapshotOne[i]['InternalEnergy']))
                 rho.append(np.array(snapshotOne[i]['Density']))
-                smoothing.append(np.array(snapshotOne[i]['SmoothingLength']))
+                if not arepo:
+                    smoothing.append(np.array(snapshotOne[i]['SmoothingLength']))
             if i != 'PartType1' and (metallicity_in_everything or i == 'PartType0'):
                 metallicity.append(np.array(snapshotOne[i]['Metallicity']))
         
@@ -179,14 +183,24 @@ def join (snapshotZero, snapshotOne, output='init.dat',
     dataList = []
 
     if ('PartType0' in [*snapshotZero.keys()]) or ('PartType0' in [*snapshotZero.keys()]):
-        dataList = [np.concatenate(positions),
-                    np.concatenate(velocities),
-                    np.array(range(sum(nPart))) + 1,
-                    np.concatenate(masses),
-                    np.concatenate(energy),
-                    np.concatenate(rho),
-                    np.concatenate(smoothing),
-                    np.concatenate(metallicity)]
+        if arepo:
+            dataList = [np.concatenate(positions),
+                        np.concatenate(velocities),
+                        np.array(range(sum(nPart))) + 1,
+                        np.concatenate(masses),
+                        np.concatenate(energy),
+                        np.concatenate(rho),
+                        np.concatenate(metallicity)]
+        else:
+            dataList = [np.concatenate(positions),
+                        np.concatenate(velocities),
+                        np.array(range(sum(nPart))) + 1,
+                        np.concatenate(masses),
+                        np.concatenate(energy),
+                        np.concatenate(rho),
+                        np.concatenate(smoothing),
+                        np.concatenate(metallicity)]
+
 
     else:
         dataList = [np.concatenate(positions),
@@ -266,6 +280,8 @@ if __name__ == '__main__':
                          first snapshot given.')
     parser.add_argument('--noCOMshift', action='store_false', help='This will\
                          skip the final shift into the center of mass.')
+    parser.add_argument('--arepo', action='store_true', help='This skips some\
+                        parts that assume sph particles.')
 
     args = parser.parse_args()
 
@@ -280,7 +296,8 @@ if __name__ == '__main__':
          rotationAngles=args.rotation,
          outputFormat=outputFormat,
          includeHaloZero=args.noMainHalo,
-         shiftToCOM=args.noCOMshift)
+         shiftToCOM=args.noCOMshift,
+         arepo=args.arepo)
 
 
 
