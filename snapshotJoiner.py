@@ -138,9 +138,10 @@ def join (snapshotZero, snapshotOne, output='init.dat',
                 metallicity.append(np.concatenate((np.array(snapshotZero[i]['Metallicity']), np.array(snapshotOne[i]['Metallicity']))))
             elif ("Metallicity" in [*snapshotZero[i].keys()]):
                 metallicity.append(np.concatenate((np.array(snapshotZero[i]['Metallicity']), np.zeros(len(snapshotOne[i]['Coordinates'])))))
-            else:
+            elif:
                 metallicity.append(np.concatenate(np.zeros(len(snapshotZero[i]['Coordinates'])), (np.array(snapshotOne[i]['Metallicity']))))
-
+            else: # there isn't any metallicity information
+                metallicity.append(np.concatenate(np.zeros(len(snapshotZero[i]['Coordinates'])), np.zeros(len(snapshotZero[i]['Coordinates']))))
         
         elif existsInZero:
             nPart.append(len(snapshotZero[i]['ParticleIDs']))
